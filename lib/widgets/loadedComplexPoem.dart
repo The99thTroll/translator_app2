@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:provider/provider.dart';
@@ -6,6 +8,10 @@ import 'package:translator_app/providers/complexPoem.dart';
 
 import '../providers/firebaseCommunicator.dart';
 import '../providers/canticle.dart';
+
+import 'package:graphite/core/matrix.dart';
+import 'package:graphite/core/typings.dart';
+import 'package:graphite/graphite.dart';
 
 class LoadedComplexPoemTile extends StatefulWidget {
   final data;
@@ -20,6 +26,16 @@ class LoadedComplexPoemTile extends StatefulWidget {
 
 class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
   bool _open = false;
+  bool _breakdown = false;
+
+  List graphData = [];
+
+  static const presetBasic =
+      '[{"id":"A","next":["B"]},{"id":"B","next":["C","D","E"]},'
+      '{"id":"C","next":["F"]},{"id":"D","next":["J"]},{"id":"E","next":["J"]},'
+      '{"id":"J","next":["I"]},{"id":"I","next":["H"]},{"id":"F","next":["K"]},'
+      '{"id":"K","next":["L"]},{"id":"H","next":["L"]},{"id":"L","next":["P"]},'
+      '{"id":"P","next":["M","N"]},{"id":"M","next":[]},{"id":"N","next":[]}]';
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +55,96 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                   data[1]["title"],
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text("Based of ${data[1]["original"]}\n"
-                    "Created by ${data[1]["userName"]}\n"
-                    "${DateFormat('M/dd/yyyy').format(DateTime.parse(data[1]["postDate"]))}"),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Based of ${data[1]["original"]}\n"
+                        "Created by ${data[1]["userName"]}\n"
+                        "${DateFormat('M/dd/yyyy').format(DateTime.parse(data[1]["postDate"]))}"),
+                    TextButton(
+                     onPressed: (){
+                       
+                       var tempMap = {};
+                       graphData = [{"id": "Canto ${data[1]['cantoIndex']}", "next": []}, {"id": data[1]['original'], "next": ["Canto ${data[1]['cantoIndex']}"]},  {"id": data[1]['title'], "next": []}];
+
+                       var elements = data[1]['verses'];
+                       var sortedElementsDict = {};
+                       var sortedElementsList = [];
+
+                       var index = 0;
+                       for(var item in elements){
+                         if(sortedElementsDict[data[1]['translators'][index]] == null) {
+                           sortedElementsDict[data[1]['translators'][index]] = [item];
+                         }else{
+                           sortedElementsDict[data[1]['translators'][index]].add(item);
+                         }
+                         index++;
+                       }
+
+                       for(var item in sortedElementsDict.entries){
+                         sortedElementsList.add({
+                           'verse': item.value,
+                           'translator': item.key
+                         });
+                       }
+
+                       print(sortedElementsList);
+                       print(sortedElementsDict);
+
+                       if(sortedElementsDict['item'] == null){
+                         print("item was found to be null!");
+                       }
+
+                       for (var item in sortedElementsList){
+                         var translator = item['translator'];
+                         for(var element in item['verse']){
+                           tempMap[element] = {
+                             "id": "$element",
+                             "next": [translator]
+                           };
+                           graphData[0]['next'].add(element);
+                         }
+                       }
+
+                       for(var item in data[1]['translators']){
+                         if(tempMap[item] == null){
+                           tempMap[item] = {
+                             "id": "$item",
+                             "next": [data[1]['title']]
+                           };
+                         }
+                         index++;
+                       }
+
+                       for(var item in tempMap.values){
+                         graphData.add(item);
+                       }
+
+                       showModalBottomSheet(context: context, builder: (ctx){
+                         return DirectGraph(
+                           list: nodeInputFromJson(json.encode(graphData)),
+                           cellWidth: 160.0,
+                           cellPadding: 24.0,
+                           orientation: MatrixOrientation.Vertical,
+                         );
+                       });
+
+                       // setState(() {
+                       //   _open = false;
+                       //   _breakdown = !_breakdown;
+                       // });
+                     },
+                     child: Text(
+                       "View Breakdown",
+                       textAlign: TextAlign.start,
+                       style: TextStyle(
+                         fontWeight: FontWeight.bold,
+                         color: Colors.blue,
+                       ),
+                     )
+                    )
+                  ],
+                ),
                 leading: Transform.scale(
                   scale: 1.2,
                   child: IconButton(
@@ -95,6 +198,7 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                           if (mounted == true) {
                             setState(() {
                               _open = !_open;
+                              _breakdown = false;
                             });
                           }
                         },
@@ -260,6 +364,19 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                     ]
                 );
               },
+            ),
+          ),
+          if(_breakdown) Container(
+            padding: EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 4
+            ),
+            height: 250,
+            child: DirectGraph(
+              list: nodeInputFromJson(json.encode(graphData)),
+              cellWidth: 100.0,
+              cellPadding: 12.0,
+              orientation: MatrixOrientation.Vertical,
             ),
           )
         ],

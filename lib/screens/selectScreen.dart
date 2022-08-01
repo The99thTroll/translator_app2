@@ -7,6 +7,10 @@ import '../widgets/loadedPoemTile.dart';
 import '../providers/canticle.dart';
 import '../providers/firebaseCommunicator.dart';
 
+import 'package:graphite/core/matrix.dart';
+import 'package:graphite/core/typings.dart';
+import 'package:graphite/graphite.dart';
+
 enum FilterOptions{
   Mine,
   All
@@ -33,9 +37,10 @@ class _SelectScreenState extends State<SelectScreen> {
   var searchMode = "Poem Name";
 
   @override
-  void didChangeDependencies() {
-    _refreshPoems();
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _refreshPoems());
   }
 
   void checkFilter(){
@@ -59,6 +64,8 @@ class _SelectScreenState extends State<SelectScreen> {
             if(x[1]['translator1']['name'].toLowerCase().contains(keyword.toLowerCase())){
               usableData.add(x);
             }else if(x[1]['translator2']['name'].toLowerCase().contains(keyword.toLowerCase())){
+              usableData.add(x);
+            } else if(x[1]['translator2']['name'].toLowerCase().contains(keyword.toLowerCase())){
               usableData.add(x);
             }
           }else{
@@ -102,6 +109,35 @@ class _SelectScreenState extends State<SelectScreen> {
         title: Text("Select an Existing Poem"),
         backgroundColor: Theme.of(context).primaryColorDark,
         actions: <Widget>[
+          PopupMenuButton(
+            onSelected: (selectedValue){
+              _refreshPoems();
+              print(storedData);
+              print("\n\n\n\n\n\n");
+              print(storedData[1]['translators']);
+
+              var data = storedData[1]['translators'];
+
+              for(var item in data){
+                print(item);
+              }
+            },
+            icon: Icon(Icons.zoom_out_map),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                child: Text("All Poems"),
+                value: "All",
+              ),
+              PopupMenuItem(
+                child: Text("Simple Poems"),
+                value: "Simple",
+              ),
+              PopupMenuItem(
+                child: Text("ComplexPoems"),
+                value: "Complex",
+              )
+            ],
+          ),
           IconButton(
             onPressed: (){
               _refreshPoems();
@@ -111,7 +147,7 @@ class _SelectScreenState extends State<SelectScreen> {
           PopupMenuButton(
             onSelected: (selectedValue){
               setState(() {
-                searchMode = selectedValue;
+                _displayChoice = selectedValue;
               });
               _refreshPoems();
             },
@@ -216,7 +252,7 @@ class _SelectScreenState extends State<SelectScreen> {
                           }else{
                             return LoadedPoemTile(
                               data: filteredData[index],
-                              reloadPoems: _refreshPoems(),
+                              reloadPoems: (){},
                             );
                           }
                         }else{
@@ -238,7 +274,7 @@ class _SelectScreenState extends State<SelectScreen> {
                             }else{
                               return LoadedPoemTile(
                                 data: filteredData[index],
-                                reloadPoems: _refreshPoems(),
+                                reloadPoems: (){},
                               );
                             }
                           }else{

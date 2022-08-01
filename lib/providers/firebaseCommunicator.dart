@@ -68,7 +68,7 @@ class FirebaseCommunicator with ChangeNotifier {
               'name': data["name"],
               'userId': _userId,
               'signUpDate': DateTime.now().toIso8601String(),
-              'signIns': [DateTime.now().toIso8601String()]
+              'signIns': [DateTime.now().toIso8601String()],
             })
         );
         _userName = data["name"];
