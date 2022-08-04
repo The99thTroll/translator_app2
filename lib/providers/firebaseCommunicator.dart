@@ -12,6 +12,8 @@ class FirebaseCommunicator with ChangeNotifier {
   String _userId;
   String _userName;
   Timer _authTimer;
+  List cachedData;
+  List cachedUserData;
 
   bool get isAuth {
     return token != null;
@@ -201,40 +203,48 @@ class FirebaseCommunicator with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List> loadStoredPoems() async {
-    var url = "https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token";
-    final response = await http.get(url);
-    final extractedData = json.decode(response.body) as Map<String, dynamic>;
+  Future<List> loadStoredPoems([bool forced = false]) async {
+    if (cachedData == null || forced) {
+      var url = "https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token";
+      final response = await http.get(url);
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-    var items = [];
+      var items = [];
 
-    if (extractedData != null) {
-      extractedData.forEach(
-        (key, value) {
-          items.add([key, value]);
-        }
-      );
-    }
-
-    return items;
-  }
-
-  Future<List> loadMyPoems() async {
-    var url = 'https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token&orderBy="userId"&equalTo="$_userId"';
-    final response = await http.get(url);
-    final extractedData = json.decode(response.body) as Map<String, dynamic>;
-
-    var items = [];
-
-    if (extractedData != null) {
-      extractedData.forEach(
-              (key, value) {
+      if (extractedData != null) {
+        extractedData.forEach(
+          (key, value) {
             items.add([key, value]);
           }
-      );
+        );
+      }
+      cachedData = items;
+      return items;
+    }else{
+     return cachedData;
     }
+  }
 
-    return items;
+  Future<List> loadMyPoems([bool forced = false]) async {
+    if (cachedUserData == null || forced) {
+      var url = 'https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token&orderBy="userId"&equalTo="$_userId"';
+      final response = await http.get(url);
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+
+      var items = [];
+
+      if (extractedData != null) {
+        extractedData.forEach(
+                (key, value) {
+              items.add([key, value]);
+            }
+        );
+      }
+      cachedUserData = items;
+      return items;
+    } else {
+      return cachedUserData;
+    }
   }
 
   bool userMatches(String userId){

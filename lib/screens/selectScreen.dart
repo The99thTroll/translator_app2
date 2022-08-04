@@ -40,7 +40,9 @@ class _SelectScreenState extends State<SelectScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => _refreshPoems());
+        .addPostFrameCallback((_){
+          _refreshPoems();
+        });
   }
 
   void checkFilter(){
@@ -88,12 +90,12 @@ class _SelectScreenState extends State<SelectScreen> {
     });
   }
 
-  _refreshPoems() async {
+  _refreshPoems([bool forced = false]) async {
     var data;
     if (_displayChoice == FilterOptions.All) {
-      data = await Provider.of<FirebaseCommunicator>(context, listen: false).loadStoredPoems();
+      data = await Provider.of<FirebaseCommunicator>(context, listen: false).loadStoredPoems(forced);
     }else{
-      data = await Provider.of<FirebaseCommunicator>(context, listen: false).loadMyPoems();
+      data = await Provider.of<FirebaseCommunicator>(context, listen: false).loadMyPoems(forced);
     }
 
     setState(() {
@@ -112,14 +114,10 @@ class _SelectScreenState extends State<SelectScreen> {
           PopupMenuButton(
             onSelected: (selectedValue){
               _refreshPoems();
-              print(storedData);
-              print("\n\n\n\n\n\n");
-              print(storedData[1]['translators']);
+              for(var item in storedData){
+                if(item != null){
 
-              var data = storedData[1]['translators'];
-
-              for(var item in data){
-                print(item);
+                }
               }
             },
             icon: Icon(Icons.zoom_out_map),
@@ -140,7 +138,7 @@ class _SelectScreenState extends State<SelectScreen> {
           ),
           IconButton(
             onPressed: (){
-              _refreshPoems();
+              _refreshPoems(true);
             },
             icon: Icon(Icons.refresh)
           ),
@@ -201,7 +199,6 @@ class _SelectScreenState extends State<SelectScreen> {
                       searchMode = "Translator";
                     }
                   });
-                  _refreshPoems();
                 },
                 icon: Icon(Icons.more_vert),
                 itemBuilder: (_) => [
