@@ -114,6 +114,7 @@ class _SelectScreenState extends State<SelectScreen> {
           PopupMenuButton(
             onSelected: (selectedValue){
               _refreshPoems();
+              //Refresh
               for(var item in storedData){
                 if(item != null){
 
