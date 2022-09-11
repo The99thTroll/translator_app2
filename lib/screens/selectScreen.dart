@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translator_app/widgets/loadedComplexPoem.dart';
@@ -8,9 +10,9 @@ import '../providers/canticle.dart';
 import '../providers/firebaseCommunicator.dart';
 
 import 'package:graphite/core/matrix.dart';
-import 'package:graphite/core/typings.dart';
 import 'package:graphite/graphite.dart';
-
+import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid_util.dart';
 enum FilterOptions{
   Mine,
   All
@@ -114,12 +116,116 @@ class _SelectScreenState extends State<SelectScreen> {
           PopupMenuButton(
             onSelected: (selectedValue){
               _refreshPoems();
-              //Refresh
-              for(var item in storedData){
-                if(item != null){
 
+              List<Map> finalGraphData = [{"id": 'All Complex Poems', "next": []}];
+
+              int infernoCounter = 0;
+              int infernoPos;
+
+              int purgatorioCounter = 0;
+              int purgatorioPos = 0;
+
+              int paradisoCounter = 0;
+              int paradisoPos = 0;
+
+              for(var data in storedData){
+                if(data[1]['translators'] != null){
+                  //final uuid = '[' + Uuid().v1obj().toString().substring(0,8) + ']';
+                  final uuid = ' (' + data[0] + ')';
+
+                  var tempMap = {};
+                  List graphData = [{"id": "Canto ${data[1]['cantoIndex']}" + uuid, "next": []}, {"id": data[1]['original'], "next": ["Canto ${data[1]['cantoIndex']}" + uuid]},  {"id": data[1]['title'] + uuid, "next": []}];
+
+                  var elements = data[1]['verses'];
+                  var sortedElementsDict = {};
+                  var sortedElementsList = [];
+
+                  var index = 0;
+                  for(var item in elements){
+                    if(sortedElementsDict[data[1]['translators'][index]] == null) {
+                      sortedElementsDict[data[1]['translators'][index]] = [item];
+                    }else{
+                      sortedElementsDict[data[1]['translators'][index]].add(item);
+                    }
+                    index++;
+                  }
+
+                  for(var item in sortedElementsDict.entries){
+                    sortedElementsList.add({
+                      'verse': item.value,
+                      'translator': item.key
+                    });
+                  }
+
+                  for (var item in sortedElementsList){
+                    var translator = item['translator'];
+                    for(var element in item['verse']){
+                      tempMap[element] = {
+                        "id": "$element" + uuid,
+                        "next": [translator + uuid]
+                      };
+                      graphData[0]['next'].add(element + uuid);
+                    }
+                  }
+
+                  for(var item in data[1]['translators']){
+                    if(tempMap[item] == null){
+                      tempMap[item] = {
+                        "id": "$item" + uuid,
+                        "next": [data[1]['title'] + uuid]
+                      };
+                    }
+                    index++;
+                  }
+
+                  for(var item in tempMap.values){
+                    graphData.add(item);
+                  }
+
+                  if(!finalGraphData[0]['next'].contains(data[1]['original'])) {
+                    finalGraphData[0]['next'].add(data[1]['original']);
+                  }
+
+                  for(var value in graphData){
+                    if(value['id'].substring(0, 7) == "Inferno"){
+                      infernoCounter++;
+                      if(infernoCounter == 1){
+                        finalGraphData.add(value);
+                        infernoPos = finalGraphData.length - 1;
+                      }else{
+                        finalGraphData[infernoPos]['next'].add(value['next'][0]);
+                      }
+                    }else if(value['id'].substring(0, 7) == "Purgatorio"){
+                      purgatorioCounter++;
+                      if(purgatorioCounter == 1){
+                        finalGraphData.add(value);
+                        purgatorioPos = finalGraphData.length - 1;
+                      }else{
+                        finalGraphData[purgatorioPos]['next'].add(value['next'][0]);
+                      }
+                    }else if(value['id'].substring(0, 7) == "Paradiso"){
+                      paradisoCounter++;
+                      if(paradisoCounter == 1){
+                        finalGraphData.add(value);
+                        paradisoPos = finalGraphData.length - 1;
+                      }else{
+                        finalGraphData[paradisoPos]['next'].add(value['next'][0]);
+                      }
+                    }else{
+                      finalGraphData.add(value);
+                    }
+                  }
                 }
               }
+
+              showModalBottomSheet(context: context, enableDrag: false, builder: (ctx){
+                return DirectGraph(
+                  list: nodeInputFromJson(json.encode(finalGraphData)),
+                  cellWidth: 160.0,
+                  cellPadding: 24.0,
+                  orientation: MatrixOrientation.Vertical,
+                );
+              });
             },
             icon: Icon(Icons.zoom_out_map),
             itemBuilder: (_) => [

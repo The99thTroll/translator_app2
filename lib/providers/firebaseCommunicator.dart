@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
@@ -115,6 +116,8 @@ class FirebaseCommunicator with ChangeNotifier {
     _token = null;
     _userId = null;
     _expiryDate = null;
+    cachedData = null;
+    cachedUserData = null;
 
     if(_authTimer != null){
       _authTimer.cancel();
@@ -288,6 +291,8 @@ class FirebaseCommunicator with ChangeNotifier {
 
     ];
 
+    var prevHash = 0;
+
     for(var x = 0; x < extractedData.length; x++){
       if(extractedData[x] == "FILLER"){
         dataToSend.add("FILLER");
@@ -307,14 +312,40 @@ class FirebaseCommunicator with ChangeNotifier {
           "id": extractedData[x]["id"],
         });
       }
+
+      if(x == extractedData.length - 1){
+        prevHash = extractedData[x]['currentHash'];
+      }
+    }
+
+    var hashableData = {
+      "annotation": {
+        'data': text,
+        'sentiment': sentiment
+      },
+      "time": DateTime.now().toIso8601String(),
+      "username": userName,
+      "previousHash": prevHash,
+      "id": DateTime.now().millisecondsSinceEpoch
+    };
+
+    var hash = sha256.convert(utf8.encode(hashableData.toString()));
+
+    print(hash.toString());
+    if(hash.toString().toUpperCase() == "A" || hash.toString() == "a"){
+
     }
 
     dataToSend.add(
         {
-          "annotation": text,
+          "annotation": {
+            'data': text,
+            'sentiment': sentiment
+          },
           "time": DateTime.now().toIso8601String(),
-          "sentiment": sentiment,
           "username": userName,
+          "previousHash": prevHash,
+          'currentHash': hash.toString(),
           "id": DateTime.now().millisecondsSinceEpoch
         }
     );

@@ -274,15 +274,17 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
 
                                                         SizedBox(width: 10),
 
-                                                        TextFormField(
-                                                          controller: _textSentimentController,
-                                                          decoration: InputDecoration(labelText: 'Sentiment - Describe tone of annotation'),
-                                                          validator: (value) {
-                                                            if (value.length == 0) {
-                                                              return 'Please write a sentiment!';
-                                                            }
-                                                            return null;
-                                                          },
+                                                        Expanded(
+                                                          child: TextFormField(
+                                                            controller: _textSentimentController,
+                                                            decoration: InputDecoration(labelText: 'Sentiment - Describe tone of annotation'),
+                                                            validator: (value) {
+                                                              if (value.length == 0) {
+                                                                return 'Please write a sentiment!';
+                                                              }
+                                                              return null;
+                                                            },
+                                                          ),
                                                         ),
 
                                                         Container(
@@ -312,7 +314,7 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                                       );
                                     }
                                 );
-
+                                //
                                 await firebase.addAnnotation(_textController.text, data[0], _textSentimentController, index);
                               },
                             ),

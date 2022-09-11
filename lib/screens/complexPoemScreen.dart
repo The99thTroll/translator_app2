@@ -210,7 +210,9 @@ class _ComplexPoemScreenState extends State<ComplexPoemScreen> {
                                                 onPressed: () async {
                                                   Navigator.of(context).pop();
 
-                                                  try {
+                                                  print(Provider.of<Annotations>(context).annotations);
+
+                                                  // try {
                                                     await firebase.saveComplexPoem(
                                                         data: complexPoem.translatedValues,
                                                         translators: complexPoem.pickedTranslators,
@@ -242,25 +244,26 @@ class _ComplexPoemScreenState extends State<ComplexPoemScreen> {
                                                         );
                                                       }
                                                     );
-                                                  } catch (error) {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (ctx){
-                                                          return AlertDialog(
-                                                            title: Text('Oops!'),
-                                                            content: Text('There was an error saving ${_textController.text}!'),
-                                                            actions: [
-                                                              TextButton(
-                                                                  onPressed: (){
-                                                                    Navigator.of(context).pop();
-                                                                  },
-                                                                  child: Text("Okay")
-                                                              )
-                                                            ]
-                                                          );
-                                                        }
-                                                    );
-                                                  }
+                                                  // } catch (error) {
+                                                  //   print(error);
+                                                  //   showDialog(
+                                                  //       context: context,
+                                                  //       builder: (ctx){
+                                                  //         return AlertDialog(
+                                                  //           title: Text('Oops!'),
+                                                  //           content: Text('There was an error saving ${_textController.text}!'),
+                                                  //           actions: [
+                                                  //             TextButton(
+                                                  //                 onPressed: (){
+                                                  //                   Navigator.of(context).pop();
+                                                  //                 },
+                                                  //                 child: Text("Okay")
+                                                  //             )
+                                                  //           ]
+                                                  //         );
+                                                  //       }
+                                                  //   );
+                                                  // }
                                                 },
                                                 child: Text(
                                                   "Submit",

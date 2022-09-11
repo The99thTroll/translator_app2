@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
 
 class Annotations with ChangeNotifier{
   List<List> _annotations = [['FILLER'],['FILLER'],['FILLER'],
@@ -154,15 +157,32 @@ class Annotations with ChangeNotifier{
     );
 
     if (_textController.text.isNotEmpty) {
-      _annotations[index].add(
-          {
-            'annotation': _textController.text,
-            'username': username,
-            'sentiment': _textSentimentController.text,
-            'time': DateTime.now().toIso8601String(),
-            "id": DateTime.now().millisecondsSinceEpoch
-          }
-      );
+      var hashableData = {
+        'annotation': {
+          'data': _textController.text,
+          'sentiment': _textSentimentController.text
+        },
+        'username': username,
+        'time': DateTime.now().toIso8601String(),
+        "previousHash": 0
+      };
+
+      var hash = sha256.convert(utf8.encode(hashableData.toString()));
+
+
+
+      print(hash.toString());
+
+      _annotations[index].add({
+        'annotation': {
+          'data': _textController.text,
+          'sentiment': _textSentimentController.text,
+        },
+        'username': username,
+        'time': DateTime.now().toIso8601String(),
+        "previousHash": 0,
+        "currentHash": hash.toString()
+      });
     }
 
     notifyListeners();
