@@ -88,9 +88,6 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                          });
                        }
 
-                       print(sortedElementsList);
-                       print(sortedElementsDict);
-
                        if(sortedElementsDict['item'] == null){
                          print("item was found to be null!");
                        }

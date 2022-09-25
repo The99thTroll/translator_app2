@@ -140,6 +140,8 @@ class FirebaseCommunicator with ChangeNotifier {
 
   Future<void> savePoem({List data, String title, String original, int canticleIndex,
     int cantoIndex, List translators, List boxes, List annotations, int version = 1}) async {
+    int start = DateTime.now().millisecondsSinceEpoch;
+
     var url = "https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token";
 
     final response = await http.post(
@@ -173,11 +175,13 @@ class FirebaseCommunicator with ChangeNotifier {
     }
 
     notifyListeners();
+    print("Data POST time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   Future<void> saveComplexPoem(
       {List data, String title, String original, int canticleIndex, List annotations,
         int cantoIndex, List translators, List translatorIndex, int version = 1}) async {
+    int start = DateTime.now().millisecondsSinceEpoch;
     var url = "https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry.json?auth=$_token";
 
     final response = await http.post(
@@ -204,6 +208,7 @@ class FirebaseCommunicator with ChangeNotifier {
     }
 
     notifyListeners();
+    print("Data POST time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   Future<List> loadStoredPoems([bool forced = false]) async {

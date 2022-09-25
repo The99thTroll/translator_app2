@@ -49,6 +49,8 @@ class _SelectScreenState extends State<SelectScreen> {
 
   void checkFilter(){
     var usableData = [];
+    int start = DateTime.now().millisecondsSinceEpoch;
+
     for(var x in storedData){
       if(keyword != null && keyword != ""){
         if(searchMode == "Poem Name" && x[1]['title'].toLowerCase().startsWith(keyword.toLowerCase())){
@@ -90,9 +92,12 @@ class _SelectScreenState extends State<SelectScreen> {
     setState(() {
       filteredData = usableData;
     });
+
+    print("Data SORT time taken: ${DateTime.now().millisecondsSinceEpoch - start}ms");
   }
 
   _refreshPoems([bool forced = false]) async {
+    int start = DateTime.now().millisecondsSinceEpoch;
     var data;
     if (_displayChoice == FilterOptions.All) {
       data = await Provider.of<FirebaseCommunicator>(context, listen: false).loadStoredPoems(forced);
@@ -104,6 +109,8 @@ class _SelectScreenState extends State<SelectScreen> {
       storedData = data;
     });
     checkFilter();
+
+    print("Data FETCH time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   @override
