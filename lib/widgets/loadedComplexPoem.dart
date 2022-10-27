@@ -97,7 +97,8 @@ class _LoadedPoemTileState extends State<LoadedComplexPoemTile> {
                          for(var element in item['verse']){
                            tempMap[element] = {
                              "id": "$element",
-                             "next": [translator]
+                             "next": [translator],
+                             "nextID": '$element'
                            };
                            graphData[0]['next'].add(element);
                          }

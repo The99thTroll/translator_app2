@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/httpException.dart';
+import 'package:path_provider/path_provider.dart';
 
 class FirebaseCommunicator with ChangeNotifier {
   String _token;
@@ -15,6 +17,16 @@ class FirebaseCommunicator with ChangeNotifier {
   Timer _authTimer;
   List cachedData;
   List cachedUserData;
+
+  Future<File> write(String type, String data) async {
+    var url = 'https://text-translator-53afd-default-rtdb.firebaseio.com/info/$type.json?auth=$_token';
+    final patchRequest = await http.post(
+        url,
+        body: json.encode({
+          'val': data
+        })
+    );
+  }
 
   bool get isAuth {
     return token != null;
@@ -175,7 +187,7 @@ class FirebaseCommunicator with ChangeNotifier {
     }
 
     notifyListeners();
-    print("Data POST time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
+    write("POST", "${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   Future<void> saveComplexPoem(
@@ -208,7 +220,7 @@ class FirebaseCommunicator with ChangeNotifier {
     }
 
     notifyListeners();
-    print("Data POST time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
+    write("POST", "${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   Future<List> loadStoredPoems([bool forced = false]) async {

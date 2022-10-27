@@ -110,7 +110,7 @@ class _SelectScreenState extends State<SelectScreen> {
     });
     checkFilter();
 
-    print("Data FETCH time taken: ${DateTime.now().millisecondsSinceEpoch - start} ms");
+    Provider.of<FirebaseCommunicator>(context, listen: false).write("FETCH", "${DateTime.now().millisecondsSinceEpoch - start} ms");
   }
 
   @override
@@ -123,6 +123,8 @@ class _SelectScreenState extends State<SelectScreen> {
           PopupMenuButton(
             onSelected: (selectedValue){
               _refreshPoems();
+
+              int start = DateTime.now().millisecondsSinceEpoch;
 
               List<Map> finalGraphData = [{"id": 'All Complex Poems', "next": []}];
 
@@ -233,6 +235,8 @@ class _SelectScreenState extends State<SelectScreen> {
                   orientation: MatrixOrientation.Vertical,
                 );
               });
+
+              Provider.of<FirebaseCommunicator>(context, listen: false).write("GRAPH", "${DateTime.now().millisecondsSinceEpoch - start} ms");
             },
             icon: Icon(Icons.zoom_out_map),
             itemBuilder: (_) => [
