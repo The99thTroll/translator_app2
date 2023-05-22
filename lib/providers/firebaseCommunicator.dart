@@ -304,9 +304,7 @@ class FirebaseCommunicator with ChangeNotifier {
     var extractedData = json.decode(data.body);
     final url2 = 'https://text-translator-53afd-default-rtdb.firebaseio.com/userPoetry/$id/annotations.json?auth=$_token';
 
-    var dataToSend = [
-
-    ];
+    var dataToSend = [];
 
     var prevHash = 0;
 
